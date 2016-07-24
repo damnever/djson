@@ -1,0 +1,20 @@
+            A JSON parser written in Python, as a practice..
+
+
+  # APIs:
+
+      load(str) -> dict()
+      loads(fd) -> dict(): fd is a iterable file-like object.
+      dumps(obj, fd=sys.stdout, encoder=Encoder): Rewrite Encoder to support custom object.
+      dump(obj, encoder=Encoder) -> str
+
+
+  # Usage
+
+      See examples/
+
+
+  # TODO:
+
+      testcases(corner cases..)
+      make dumped json string more readable..
