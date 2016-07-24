@@ -5,8 +5,8 @@
 
       load(str) -> dict()
       loads(fd) -> dict(): fd is a iterable file-like object.
-      dumps(obj, fd=sys.stdout, encoder=Encoder): Rewrite Encoder to support custom object.
-      dump(obj, encoder=Encoder) -> str
+      dump(obj, fd=sys.stdout, encoder=Encoder): Rewrite Encoder to support custom object.
+      dumps(obj, encoder=Encoder) -> str
 
 
   # Usage
