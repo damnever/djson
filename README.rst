@@ -1,11 +1,11 @@
-A JSON parser written in Python
-===============================
+A different JSON parser for Python
+==================================
 
 
 WTF
 ---
 
-:cry: :
+-_-# :
 
 .. code:: python
 
@@ -14,7 +14,7 @@ WTF
 
 
 
-:kissing_heart: :
+^_^ :
 
 .. code:: python
 
@@ -27,8 +27,8 @@ APIs
 ----
 
  - load(str) -> dict()
- - loads(fd) -> dict(): fd is a iterable file-like object.
- - dump(obj, fd=sys.stdout, encoder=Encoder): Rewrite Encoder to support custom object. NOTE: returned string must like this: ``'"string"'``.
+ - loads(file) -> dict(): file is a iterable file-like object.
+ - dump(obj, file=sys.stdout, encoder=Encoder): Rewrite Encoder to support custom object. NOTE: returned string must like this: ``'"string"'``.
  - dumps(obj, encoder=Encoder) -> str
 
 

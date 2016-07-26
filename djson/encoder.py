@@ -52,10 +52,10 @@ class Encoder(object):
         return "null"
 
 
-def dump(obj, fd=sys.stdout, encoder=Encoder):
-    fd.write(encoder(obj).encode())
-    if hasattr(fd, 'flush'):
-        fd.flush()
+def dump(obj, file=sys.stdout, encoder=Encoder):
+    file.write(encoder(obj).encode())
+    if hasattr(file, 'flush'):
+        file.flush()
 
 
 def dumps(obj, encoder=Encoder):

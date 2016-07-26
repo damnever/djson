@@ -12,8 +12,8 @@ def loads(s):
     return _loads(to_unicode(s))
 
 
-def load(fd):
-    return _loads(_fd_as_ch_iter(fd))
+def load(file):
+    return _loads(_iter_char_in_file(file))
 
 
 def _loads(value):
@@ -25,8 +25,8 @@ def _loads(value):
         decoder._token_illegal()
 
 
-def _fd_as_ch_iter(fd):
-    for line in fd:
+def _iter_char_in_file(file):
+    for line in file:
         for ch in to_unicode(line):
             yield ch
 
