@@ -19,7 +19,7 @@ class Encoder(object):
         type_name = type(obj)
         method = getattr(self, 'encode_' + type_name.__name__, None)
         if method is None:
-            raise JSONEncodeError('Unsupported object: "{0}(type:{1})"'.format(
+            raise JSONEncodeError('unsupported object: "{0}(type:{1})"'.format(
                 obj, type_name))
         return (lambda: method(obj))
 

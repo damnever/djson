@@ -127,7 +127,7 @@ class JSONDecoder(object):
         # as a key, or value, or array item
         val_s = self._reader.token_as_value()
         err = JSONDecodeError("unexpected string value in {0}: '{1}'".format(
-            self._reader.location(len(to_utf8(val_s))), val_s))
+            self._reader.location(len(to_utf8(val_s))+2), val_s))
         self._single_value_token(val_s, err)
 
     def _token_number(self):
