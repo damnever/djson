@@ -3,7 +3,7 @@
 from djson import loads, JSONDecodeError
 
 
-json_str = """
+json_str = r"""
 {
     "good": "bad",
     123: 456,
@@ -13,23 +13,23 @@ json_str = """
 }
 """
 
-bad_json_str = """
+bad_json_str = r"""
 {
     "good": "bad",
     null
 }
 """
 
-bad_json_str2 = """
+bad_json_str2 = r"""
 {
     "good": "bad",
     "bad": 12.3.4
 }
 """
 
-bad_json_str3 = """
+bad_json_str3 = r"""
 {
-    "good": "bad\\\\\""
+    "good": "bad\\\\\"",
     "bad": "good\\\\\\""
 }
 """

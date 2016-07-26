@@ -11,8 +11,10 @@ json_obj = {
     'iui': False,
 }
 
+
 class AA(object):
     pass
+
 
 json_obj2 = {
     'custom': AA(),
