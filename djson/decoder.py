@@ -5,10 +5,19 @@ from __future__ import absolute_import
 from .reader import TokenReader
 from .consts import State, Token
 from .excs import JSONDecodeError, _NoMoreDataError
+from .utils import to_unicode, to_utf8
 
 
 def loads(s):
-    reader = TokenReader(s)
+    return _loads(to_unicode(s))
+
+
+def load(fd):
+    return _loads(_fd_as_ch_iter(fd))
+
+
+def _loads(value):
+    reader = TokenReader(value)
     decoder = JSONDecoder(reader)
     try:
         return decoder.parse()
@@ -16,7 +25,10 @@ def loads(s):
         decoder._token_illegal()
 
 
-load = loads
+def _fd_as_ch_iter(fd):
+    for line in fd:
+        for ch in to_unicode(line):
+            yield ch
 
 
 class JSONDecoder(object):
@@ -58,13 +70,15 @@ class JSONDecoder(object):
         if self._state.has(State.EXPECT_OBJECT_BEGIN):
             self._stack.push(_StackValue.new_object())
         else:
-            raise JSONDecodeError("Unexpected character: '{'")
+            raise JSONDecodeError("unexpected character in {0}: '{1}'".format(
+                self._reader.location(), '{'))
 
     def _token_object_end(self):
         # may be a value for k/v pair, or array item
         stack = self._stack
         state = self._state
-        err = JSONDecodeError("Unexpected character: '}'")
+        err = JSONDecodeError("unexpected character in {0}: '{1}'".format(
+            self._reader.location(), '}'))
         if not state.has(State.EXPECT_OBJECT_END) or stack.is_empty():
             raise err
 
@@ -82,18 +96,19 @@ class JSONDecoder(object):
         else:
             raise err
 
-
     def _token_array_begin(self):
         if self._state.has(State.EXPECT_ARRAY_BEGIN):
             self._stack.push(_StackValue.new_array())
         else:
-            raise JSONDecodeError("Unexpected character: '['")
+            raise JSONDecodeError("unexpected character in {0}: '['".format(
+                self._reader.location()))
 
     def _token_array_end(self):
         # may be a value for k/v pair, or array item
         stack = self._stack
         state = self._state
-        err = JSONDecodeError("Unexpected character: ']'")
+        err = JSONDecodeError("unexpected character in {0}: ']'".format(
+            self._reader.location()))
         if stack.is_empty() or not state.has(State.EXPECT_ARRAY_END):
             raise err
 
@@ -111,28 +126,33 @@ class JSONDecoder(object):
     def _token_string(self):
         # as a key, or value, or array item
         val_s = self._reader.token_as_value()
-        err = JSONDecodeError("Unexpected string value: '{0}'".format(val_s))
+        err = JSONDecodeError("unexpected string value in {0}: '{1}'".format(
+            self._reader.location(len(to_utf8(val_s))), val_s))
         self._single_value_token(val_s, err)
 
     def _token_number(self):
         val_n = self._reader.token_as_value()
-        err = JSONDecodeError("Unexpected number value: '{0}'".format(val_n))
+        err = JSONDecodeError("unexpected number value in {0}: '{1}'".format(
+            self._reader.location(len(str(val_n))), val_n))
         self._single_value_token(val_n, err)
 
     def _token_boolean(self):
         val_b = self._reader.token_as_value()
-        err = JSONDecodeError("Unexpected boolean value: '{0}'".format(val_b))
+        err = JSONDecodeError("unexpected boolean value in {0}: '{1}'".format(
+            self._reader.location(len(str(val_b))), val_b))
         self._single_value_token(val_b, err)
 
     def _token_null(self):
         val_null = self._reader.token_as_value()
-        err = JSONDecodeError("Unexpected null value: '{0}'".format(val_null))
+        err = JSONDecodeError("unexpected null value in {0}: '{1}'".format(
+            self._reader.location(4), val_null))
         self._single_value_token(val_null, err)
 
     def _token_sep_comma(self):
         stack = self._stack
         state = self._state
-        err = JSONDecodeError("Unexpected comma: ','")
+        err = JSONDecodeError("unexpected comma in {0}: ','".format(
+            self._reader.location()))
         if stack.is_empty() or not state.has(State.EXPECT_COMMA):
             raise err
         type_ = stack.top_type()
@@ -146,7 +166,8 @@ class JSONDecoder(object):
     def _token_sep_colon(self):
         stack = self._stack
         state = self._state
-        err = JSONDecodeError("Unexpected colon: ':'")
+        err = JSONDecodeError("unexpected colon in {0}: ':'".format(
+            self._reader.location()))
         if stack.is_empty() or not state.has(State.EXPECT_COLON):
             raise err
         type_ = stack.top_type()

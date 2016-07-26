@@ -13,8 +13,14 @@ class TokenReader(object):
         self._data = iter(stream)
         self._buffer = deque()
         self._token = JSONDecodeError("No such token")
+        self._line = 1
+        self._column = 1
 
-    def next_token(self):
+    def location(self, offset=0):
+        return "(line: {0}, column: {1})".format(
+            self._line, self._column-offset)
+
+    def next_token(self, _empty_chs={'\n', '\r', ' ', '\t', '\f', '\b'}):
         try:
             ch = self._read_next()
         except _NoMoreDataError:
@@ -45,7 +51,7 @@ class TokenReader(object):
             token = Token.SEP_COMMA
         elif ch == ':':
             token = Token.SEP_COLON
-        elif ch in ('\n', '\r', ' ', '\r\n'):
+        elif ch in _empty_chs:
             token = Token.EMPTY
 
         return token
@@ -53,21 +59,27 @@ class TokenReader(object):
     def token_as_value(self):
         return self._token
 
-    def _read_next(self):
-        if self._buffer:
-            return self._buffer.pop()
-        try:
-            return next(self._data)
-        except StopIteration:
-            raise _NoMoreDataError()
-
-    def _peek_next(self):
-        if self._buffer:
-            return self._buffer[-1]
+    def _next_char(self, _line_seps={'\n', '\r'}):
         try:
             ch = next(self._data)
         except StopIteration:
             raise _NoMoreDataError()
+        if ch in _line_seps:
+            self._line += 1
+            self._column = 1
+        else:
+            self._column += 1
+        return ch
+
+    def _read_next(self):
+        if self._buffer:
+            return self._buffer.pop()
+        return self._next_char()
+
+    def _peek_next(self):
+        if self._buffer:
+            return self._buffer[-1]
+        ch = self._next_char()
         self._buffer.appendleft(ch)
         return ch
 
@@ -83,16 +95,20 @@ class TokenReader(object):
             if not ('0' <= ch <= '9') and ch != '.':
                 break
             if ch == '.':
-                if dot_num == 0:
-                    dot_num += 1
-                else:
-                    raise JSONDecodeError("parse number error: "
-                                          "found more than one dot character.")
+                if dot_num != 0:
+                    raise JSONDecodeError(
+                        "parse number error in {0}: found more than one dot"
+                        " character.".format(self.location())
+                    )
+                dot_num += 1
             nums.append(ch)
             self._buffer.pop()
 
         if not nums:
-            raise JSONDecodeError("parse number error: no number found.")
+            raise JSONDecodeError(
+                "parse number error in {0}: no"
+                " number found.".format(self.location())
+            )
 
         num = ''.join(nums)
         if dot_num:
@@ -100,13 +116,17 @@ class TokenReader(object):
         else:
             self._token = sign * int(num)
 
-
-    def _parse_string(self):
+    def _parse_string(self, _illegal_chs={'\n', '\r'}):
         chs = list()
         slash_num = 0
 
         while 1:
             ch = self._read_next()
+            if ch in _illegal_chs:
+                raise JSONDecodeError(
+                    "parse string error in {0}: donot allow"
+                    " multiple line.".format(self.location())
+                )
             if ch == '"':
                 if slash_num % 2 == 0:
                     break
@@ -116,8 +136,10 @@ class TokenReader(object):
             chs.append(ch)
 
         if slash_num % 2 != 0:
-            raise JSONDecodeError("parse string error: "
-                                  "found more than one \"\\\" character.")
+            raise JSONDecodeError(
+                "parse string error in {0}: found more than "
+                "one \"\\\" character.".format(self.location())
+            )
         self._token = ''.join(chs)
 
     def _parse_boolean(self, ch):
@@ -128,12 +150,18 @@ class TokenReader(object):
             may_false = may_true + self._read_next()
             if may_false == 'false':
                 self._token = False
-            raise JSONDecodeError("parse boolean error: "
-                                  "no boolean value found.")
+            else:
+                raise JSONDecodeError(
+                    "parse boolean error in {0}: no boolean"
+                    " value found.".format(self.location())
+                )
 
     def _parse_null(self, ch):
         may_null = ch + ''.join(self._read_next() for _ in range(3))
         if may_null == 'null':
             self._token = None
         else:
-            raise JSONDecodeError("parse null error: no null value found.")
+            raise JSONDecodeError(
+                "parse null error in {0}: no null"
+                " value found.".format(self.location())
+            )

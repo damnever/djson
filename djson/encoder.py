@@ -4,6 +4,7 @@ from __future__ import absolute_import
 import sys
 
 from .excs import JSONEncodeError
+from .utils import to_utf8
 
 
 class Encoder(object):
@@ -12,7 +13,7 @@ class Encoder(object):
         self._obj = obj
 
     def encode(self):
-        return self._get_method(self._obj)()
+        return to_utf8(self._get_method(self._obj)())
 
     def _get_method(self, obj):
         type_name = type(obj)
@@ -27,15 +28,14 @@ class Encoder(object):
         get_method = self._get_method
         for k, v in val_dict.items():
             items.append('{0}: {1}'.format(get_method(k)(), get_method(v)()))
-        return '{' + ','.join(items) + '}'
+        return '{' + ', '.join(items) + '}'
 
     def encode_list(self, val_ls):
         items = list()
         get_method = self._get_method
         for item in val_ls:
             items.append(get_method(item)())
-        return '[' + ','.join(items) + ']'
-
+        return '[' + ', '.join(items) + ']'
 
     def encode_str(self, val_s):
         return '"{0}"'.format(val_s)
@@ -54,6 +54,8 @@ class Encoder(object):
 
 def dump(obj, fd=sys.stdout, encoder=Encoder):
     fd.write(encoder(obj).encode())
+    if hasattr(fd, 'flush'):
+        fd.flush()
 
 
 def dumps(obj, encoder=Encoder):
