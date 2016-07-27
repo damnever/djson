@@ -2,6 +2,7 @@
 
 import pytest
 from djson.encoder import JSONEncoder
+from djson.utils import to_utf8
 
 
 @pytest.fixture(scope='module')
@@ -32,12 +33,14 @@ def test_encode_str(encoder):
 
 def test_encode_list(encoder):
     lobj = [1, 2.4, "qwer", '34', -456, True, None, False]
-    assert encoder.encode_list(lobj), '[1, 2.4, "qwer", "34", -456, true, null, false]'
+    assert (sorted(encoder.encode_list(lobj)) ==
+            sorted('[1, 2.4, "qwer", "34", -456, true, null, false]'))
 
 
 def test_encode_dict(encoder):
     dobj = {"1": 2, 3: "4", True: "hhe", "ww": None, False: [1, -2]}
-    assert encoder.encode_dict(dobj), '{"1": 2, 3: "4", true: "hhe", "ww": null, false: [1, -2]}'
+    assert (sorted(encoder.encode_dict(dobj)) ==
+            sorted('{"1": 2, 3: "4", true: "hhe", "ww": null, false: [1, -2]}'))
 
 
 class Custom(object):
@@ -56,4 +59,6 @@ class MyEncoder(JSONEncoder):
 def test_encode_custom_obj():
     dobj = {"1": Custom(), 3: "4", True: "hhe", "ww": None, False: [1, -2]}
     encoder = MyEncoder(dobj)
-    assert encoder.encode() == '{"1": "hahahaha", true: "hhe", 3: "4", "ww": null, false: [1, -2]}'
+    assert (sorted(encoder.encode()) ==
+                  sorted(to_utf8('{"1": "hahahaha", true: "hhe", 3: "4",'
+                                 ' "ww": null, false: [1, -2]}')))

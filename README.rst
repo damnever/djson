@@ -1,6 +1,12 @@
 A different JSON parser for Python
 ==================================
 
+.. image:: https://img.shields.io/travis/damnever/djson.svg?style=flat-square
+    :target: https://travis-ci.org/damnever/djson
+
+.. image:: https://img.shields.io/pypi/v/djson.svg?style=flat-square
+    :target: https://pypi.python.org/pypi/djson
+
 
 WTF
 ---
