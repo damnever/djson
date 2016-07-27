@@ -1,0 +1,11 @@
+{
+    "name": "damnever",
+    "age": [21, 22],
+    21: true,
+    22: false,
+    null: "null",
+    true: {
+        "www": "github",
+    },
+    "negative": -123.456,
+}
