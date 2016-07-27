@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from djson import dumps, JSONEncodeError, Encoder
+from djson import dumps, JSONEncodeError, JSONEncoder
 
 
 json_obj = {
@@ -21,7 +21,7 @@ json_obj2 = {
 }
 
 
-class MyEncoder(Encoder):
+class MyEncoder(JSONEncoder):
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
 

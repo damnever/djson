@@ -30,7 +30,7 @@ bad_json_str2 = r"""
 bad_json_str3 = r"""
 {
     "good": "bad\\\\\"",
-    "bad": "good\\\\\\""
+    "bad": "good
 }
 """
 
