@@ -28,8 +28,8 @@ APIs
 
  - load(str) -> dict()
  - loads(file) -> dict(): file is a iterable file-like object.
- - dump(obj, file=sys.stdout, encoder=Encoder): Rewrite Encoder to support custom object. NOTE: returned string must like this: ``'"string"'``.
- - dumps(obj, encoder=Encoder) -> str
+ - dump(obj, file=sys.stdout, encoder=JSONEncoder): Rewrite JOSNEncoder to support custom object. **NOTE**: returned string must like this: ``'"string"'``.
+ - dumps(obj, encoder=JSONEncoder) -> str
 
 
 Examples
