@@ -3,11 +3,11 @@
 from __future__ import absolute_import
 import sys
 
-from .excs import JSONEncodeError
+from .exc import JSONEncodeError
 from .utils import to_utf8
 
 
-class Encoder(object):
+class JSONEncoder(object):
 
     def __init__(self, obj):
         self._obj = obj
@@ -44,7 +44,7 @@ class Encoder(object):
         return _bm[val_b]
 
     def encode_int(self, val_num):
-        return str(val_num)
+        return '{0}'.format(val_num)
 
     encode_float = encode_int
 
@@ -52,11 +52,11 @@ class Encoder(object):
         return "null"
 
 
-def dump(obj, file=sys.stdout, encoder=Encoder):
+def dump(obj, file=sys.stdout, encoder=JSONEncoder):
     file.write(encoder(obj).encode())
     if hasattr(file, 'flush'):
         file.flush()
 
 
-def dumps(obj, encoder=Encoder):
+def dumps(obj, encoder=JSONEncoder):
     return encoder(obj).encode()

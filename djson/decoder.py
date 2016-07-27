@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 from .reader import TokenReader
 from .consts import State, Token
-from .excs import JSONDecodeError, _NoMoreDataError
+from .exc import JSONDecodeError, _NoMoreDataError
 from .utils import to_unicode, to_utf8
 
 
@@ -49,7 +49,6 @@ class JSONDecoder(object):
             Token.NUMBER: self._token_number,
             Token.BOOLEAN: self._token_boolean,
             Token.NULL: self._token_null,
-            Token.EMPTY: self._token_empty,
         }
 
     def parse(self):
@@ -57,7 +56,15 @@ class JSONDecoder(object):
             token = self._reader.next_token()
             if token == Token.JSON_END:
                 break
+            if token == Token.EMPTY:
+                continue
+            if self._state.has(State.EXPECT_JSON_END):
+                raise JSONDecodeError(
+                    "unexpected redundant data in {0}".format(
+                        self._reader.location())
+                )
             self._processers[token]()
+
         if self._stack.length() != 1:
             self._token_illegal()
 
@@ -69,6 +76,7 @@ class JSONDecoder(object):
     def _token_object_begin(self):
         if self._state.has(State.EXPECT_OBJECT_BEGIN):
             self._stack.push(_StackValue.new_object())
+            self._state.reset(State.EXPECT_KEY | State.EXPECT_OBJECT_END)
         else:
             raise JSONDecodeError("unexpected character in {0}: '{1}'".format(
                 self._reader.location(), '{'))
@@ -99,6 +107,7 @@ class JSONDecoder(object):
     def _token_array_begin(self):
         if self._state.has(State.EXPECT_ARRAY_BEGIN):
             self._stack.push(_StackValue.new_array())
+            self._state.reset(State.EXPECT_ARRAY_END | State.EXPECT_VALUE)
         else:
             raise JSONDecodeError("unexpected character in {0}: '['".format(
                 self._reader.location()))
@@ -127,7 +136,7 @@ class JSONDecoder(object):
         # as a key, or value, or array item
         val_s = self._reader.token_as_value()
         err = JSONDecodeError("unexpected string value in {0}: '{1}'".format(
-            self._reader.location(len(to_utf8(val_s))+2), val_s))
+            self._reader.location(len(to_utf8(val_s))+1), val_s))
         self._single_value_token(val_s, err)
 
     def _token_number(self):
@@ -136,16 +145,16 @@ class JSONDecoder(object):
             self._reader.location(len(str(val_n))), val_n))
         self._single_value_token(val_n, err)
 
-    def _token_boolean(self):
+    def _token_boolean(self, _bm={True: 'true', False: 'false'}):
         val_b = self._reader.token_as_value()
         err = JSONDecodeError("unexpected boolean value in {0}: '{1}'".format(
-            self._reader.location(len(str(val_b))), val_b))
+            self._reader.location(len(str(val_b))-1), _bm[val_b]))
         self._single_value_token(val_b, err)
 
     def _token_null(self):
         val_null = self._reader.token_as_value()
-        err = JSONDecodeError("unexpected null value in {0}: '{1}'".format(
-            self._reader.location(4), val_null))
+        err = JSONDecodeError("unexpected null value in {0}: 'null'".format(
+            self._reader.location(3)))
         self._single_value_token(val_null, err)
 
     def _token_sep_comma(self):
@@ -179,13 +188,10 @@ class JSONDecoder(object):
     def _token_illegal(self):
         raise JSONDecodeError("Illegal JSON form.")
 
-    def _token_empty(self):
-        pass
-
     def _single_value_token(self, val, err):
         stack = self._stack
         state = self._state
-        if stack.is_empty() or not state.has(State.EXPECT_VALUE):
+        if stack.is_empty() or not state.has(State.EXPECT_KEY):
             raise err
 
         type_ = stack.top_type()

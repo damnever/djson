@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from collections import deque
 
 from .consts import Token
-from .excs import JSONDecodeError, _NoMoreDataError
+from .exc import JSONDecodeError, _NoMoreDataError
 
 
 class TokenReader(object):
@@ -14,7 +14,7 @@ class TokenReader(object):
         self._buffer = deque()
         self._token = JSONDecodeError("No such token")
         self._line = 1
-        self._column = 1
+        self._column = 0
 
     def location(self, offset=0):
         return "(line: {0}, column: {1})".format(
@@ -66,7 +66,7 @@ class TokenReader(object):
             raise _NoMoreDataError()
         if ch in _line_seps:
             self._line += 1
-            self._column = 1
+            self._column = 0
         else:
             self._column += 1
         return ch
@@ -85,10 +85,7 @@ class TokenReader(object):
 
     def _parse_number(self, ch):
         nums = [ch]
-        sign = 1
         dot_num = 0
-        if ch == '-':
-            sign = -1
 
         while 1:
             ch = self._peek_next()
@@ -104,21 +101,14 @@ class TokenReader(object):
             nums.append(ch)
             self._buffer.pop()
 
-        if not nums:
-            raise JSONDecodeError(
-                "parse number error in {0}: no"
-                " number found.".format(self.location())
-            )
-
         num = ''.join(nums)
         if dot_num:
-            self._token = sign * float(num)
+            self._token = float(num)
         else:
-            self._token = sign * int(num)
+            self._token = int(num)
 
-    def _parse_string(self, _illegal_chs={'\n', '\r'}):
+    def _parse_string(self, _illegal_chs={'\n', '\r', '\t', '\f', '\b'}):
         chs = list()
-        slash_num = 0
 
         while 1:
             ch = self._read_next()
@@ -128,18 +118,9 @@ class TokenReader(object):
                     " multiple line.".format(self.location())
                 )
             if ch == '"':
-                if slash_num % 2 == 0:
-                    break
-                slash_num = 0
-            elif ch == '\\':
-                slash_num += 1
+                break
             chs.append(ch)
 
-        if slash_num % 2 != 0:
-            raise JSONDecodeError(
-                "parse string error in {0}: found more than "
-                "one \"\\\" character.".format(self.location())
-            )
         self._token = ''.join(chs)
 
     def _parse_boolean(self, ch):
