@@ -29,6 +29,13 @@ WTF
 
 
 
+Installation
+------------
+
+    pip install djson
+
+
+
 APIs
 ----
 
@@ -42,12 +49,6 @@ Examples
 --------
 
 See `examples/ <https://github.com/Damnever/djson/tree/master/examples>`_
-
-
-TODO
-----
-
- - testcases(corner cases..)
 
 
 LICENSE

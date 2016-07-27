@@ -20,7 +20,7 @@ setup(
     description='A different JSON parser for Python.',
     long_description=long_description,
     author='damnever',
-    url='https://github.com/Damnever/djson',
+    url='https://github.com/damnever/djson',
     author_email='dxc.wolf@gmail.com',
     license='The BSD 3-Clause License',
     classifiers=[
