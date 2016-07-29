@@ -37,9 +37,6 @@ class JSONEncoder(object):
             items.append(get_method(item)())
         return '[' + ', '.join(items) + ']'
 
-    def encode_str(self, val_s):
-        return '"{0}"'.format(val_s)
-
     def encode_bool(self, val_b, _bm={True: 'true', False: 'false'}):
         return _bm[val_b]
 
@@ -50,6 +47,13 @@ class JSONEncoder(object):
 
     def encode_NoneType(self, val_none):
         return "null"
+
+    def encode_str(self, val_s):
+        return '"{0}"'.format(val_s)
+
+    encode_unicode = encode_str  # Py2
+    encode_bytes = encode_str  # Py3
+
 
 
 def dump(obj, file=sys.stdout, encoder=JSONEncoder):
