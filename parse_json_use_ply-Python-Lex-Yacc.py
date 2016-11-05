@@ -58,12 +58,9 @@ valid = False
 
 def p_object(p):
     """ object : '{' members '}'
-               | '{' '}'
     """
     if len(p) == 4:
         p[0] = p[2]
-    else:
-        p[0] = {}
     global valid
     valid = True
 
@@ -71,12 +68,15 @@ def p_object(p):
 def p_object_members(p):
     """ members : pair
                 | pair ',' members
+                |
     """
     if len(p) == 2:
         p[0] = {p[1][0]: p[1][1]}
     elif len(p) == 4:
         p[0] = {p[1][0]: p[1][1]}
         p[0].update(p[3])
+    else:
+        p[0] = {}
     global valid
     valid = False
 
@@ -97,12 +97,9 @@ def p_pair(p):
 
 def p_array(p):
     """ array : '[' elements ']'
-              | '[' ']'
     """
     if len(p) == 4:
         p[0] = p[2]
-    else:
-        p[0] = []
     global valid
     valid = True
 
@@ -110,6 +107,7 @@ def p_array(p):
 def p_array_elements(p):
     """ elements : value
                  | value ',' elements
+                 |
     """
     if len(p) == 2:
         p[0] = [p[1]]
