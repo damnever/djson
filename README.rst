@@ -39,8 +39,8 @@ Installation
 APIs
 ----
 
- - load(str) -> dict()
- - loads(file) -> dict(): file is a iterable file-like object.
+ - load(file) -> dict(): file is a iterable file-like object.
+ - loads(str) -> dict()
  - dump(obj, file=sys.stdout, encoder=JSONEncoder): Rewrite JOSNEncoder to support custom object. **NOTE**: returned string must like this: ``'"string"'``.
  - dumps(obj, encoder=JSONEncoder) -> str
 
